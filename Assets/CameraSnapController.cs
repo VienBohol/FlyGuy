@@ -1,149 +1,90 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
-public class CameraSnapController : MonoBehaviour
+public class CameraAndArmsController : MonoBehaviour
 {
     [Header("References")]
-    public GridManager gridManager;
-    [Tooltip("The focus target that moves between arrival points (place your crosshair here).")]
-    public Transform focusTarget;
+    public PlayerRhythmInput playerInput;   // reference to get CurrentSelectedCell
+    public Transform crosshairTransform;
+    public Transform armsTransform;
+    public Camera mainCamera;
+    public float cornerMultiplier = 1.1f; // tweak in inspector if needed
 
-    [Header("Input / Movement")]
-    public float deadzone = 0.2f;        // ignore tiny stick input
-    public float inputThreshold = 0.33f; // axis threshold for deciding left/center/right / up/center/down
-    public float snapSpeed = 15f;        // how quickly the focus target moves to the selected arrival point
+    [Header("Tilt Settings")]
+    public float leftTilt = 15f;     // arms tilt when targeting left
+    public float rightTilt = -15f;   // arms tilt when targeting right
+    public float upTilt = 5f;        // camera tilt when targeting top row
+    public float downTilt = -5f;     // camera tilt when targeting bottom row
+    public float tiltSmoothSpeed = 8f; 
 
-    [Header("Camera Follow")]
-    public Vector3 cameraOffset = new Vector3(0f, 0f, -8f); // camera stays this offset from the focus target
-    public float cameraFollowSpeed = 8f;    // how smoothly the camera follows the focus target
-
-    // runtime
-    private PlayerControls controls;
-    private Vector2 leftStickInput;
-
-    private Vector3[,] gridPoints;   // [row, col] (row 0 = top)
-    private int currentRow = 1;      // middle row
-    private int currentCol = 1;      // middle col
-
-    private void Awake()
-    {
-        controls = new PlayerControls();
-
-        if (gridManager != null)
-        {
-            // Ensure grid is computed and grab positions
-            gridManager.RecomputeGrid();
-            gridPoints = gridManager.GetArrivalPoints2D();
-        }
-        else
-        {
-            Debug.LogError("CameraSnapController: Missing GridManager reference!");
-        }
-    }
-
-    private void OnEnable()
-    {
-        controls.Player.Enable();
-    }
-
-    private void OnDisable()
-    {
-        controls.Player.Disable();
-    }
+    private Vector3 initialArmsRotation;
 
     private void Start()
     {
-        // make sure we have grid points
-        if (gridManager != null && gridPoints == null)
-            gridPoints = gridManager.GetArrivalPoints2D();
+        if (armsTransform != null)
+            initialArmsRotation = armsTransform.localEulerAngles;
 
-        // ensure focusTarget exists; if not, create a temporary one as child
-        if (focusTarget == null)
-        {
-            GameObject ft = new GameObject("FocusTarget");
-            focusTarget = ft.transform;
-            focusTarget.SetParent(null); // keep it in world space
-        }
-
-        // place focus target and camera at center start
-        Vector3 centerPos = gridPoints != null ? gridPoints[1, 1] : transform.position;
-        focusTarget.position = centerPos;
-
-        // initialize camera so it sits at proper offset behind the focus target
-        transform.position = focusTarget.position + cameraOffset;
+        // Initialize camera rotation neutral
+        if (mainCamera != null)
+            mainCamera.transform.localRotation = Quaternion.identity;
     }
 
     private void Update()
     {
-        ReadJoystick();
-        UpdateGridSelection();
-        MoveFocusTarget();
-        CameraFollow();
+        UpdateCrosshairPosition();
+        UpdateArmsAndCameraTilt();
     }
 
-    private void ReadJoystick()
+    private void UpdateCrosshairPosition()
     {
-        leftStickInput = controls.Player.Move.ReadValue<Vector2>();
+        if (crosshairTransform == null || playerInput == null || playerInput.gridManager == null)
+            return;
 
-        // apply deadzone
-        if (leftStickInput.magnitude < deadzone)
-            leftStickInput = Vector2.zero;
+        int cell = playerInput.CurrentSelectedCell;
+        Vector3[,] grid = playerInput.gridManager.GetArrivalPoints2D();
+        int row = cell / 3;
+        int col = cell % 3;
+
+        Vector3 targetPos = grid[row, col];
+        crosshairTransform.position = Vector3.Lerp(crosshairTransform.position, targetPos, Time.deltaTime * 15f);
     }
 
-    private void UpdateGridSelection()
+    private void UpdateArmsAndCameraTilt()
     {
-        if (gridPoints == null) return;
+        if (armsTransform == null || mainCamera == null || playerInput == null)
+            return;
 
-        // Default is center
-        int row = 1;
-        int col = 1;
+        int cell = playerInput.CurrentSelectedCell;
+        int row = cell / 3; // 0 = top, 1 = middle, 2 = bottom
+        int col = cell % 3; // 0 = left, 1 = middle, 2 = right
+        
 
-        // If joystick outside deadzone, choose cell based on axis thresholds
-        if (leftStickInput != Vector2.zero)
+        // Horizontal tilt (Z) for arms
+        float targetZ = 0f;
+        if (col == 0) targetZ = leftTilt;
+        else if (col == 2) targetZ = rightTilt;
+
+        // Smooth arms rotation
+        Quaternion armsTarget = Quaternion.Euler(0f, 0f, targetZ);
+        armsTransform.localRotation = Quaternion.Lerp(armsTransform.localRotation, armsTarget, Time.deltaTime * tiltSmoothSpeed);
+
+        // Vertical tilt (X) for camera based on row
+        float targetX = 0f;
+        if (row == 0) targetX = -upTilt;     // top row tilts camera slightly down
+        else if (row == 2) targetX = -downTilt;
+        // Corner multiplier
+
+        
+        if ((row == 0 || row == 2) && (col == 0 || col == 2))
         {
-            // Horizontal: left (-) -> col 0, center -> 1, right (+) -> 2
-            if (leftStickInput.x < -inputThreshold) col = 0;
-            else if (leftStickInput.x > inputThreshold) col = 2;
-            else col = 1;
-
-            // Vertical: remember gridPoints row 0 is top, so up (+y) -> row 0
-            if (leftStickInput.y > inputThreshold) row = 0;
-            else if (leftStickInput.y < -inputThreshold) row = 2;
-            else row = 1;
-        }
-        else
-        {
-            // stick released -> recenter
-            row = 1;
-            col = 1;
+            targetZ *= cornerMultiplier; // horizontal tilt
+            targetX *= cornerMultiplier; // vertical tilt
         }
 
-        // apply
-        currentRow = Mathf.Clamp(row, 0, gridPoints.GetLength(0) - 1);
-        currentCol = Mathf.Clamp(col, 0, gridPoints.GetLength(1) - 1);
-    }
 
-    private void MoveFocusTarget()
-    {
-        if (gridPoints == null || focusTarget == null) return;
 
-        Vector3 targetPos = gridPoints[currentRow, currentCol];
-        // Smoothly move the focus (crosshair) to the chosen arrival position
-        focusTarget.position = Vector3.Lerp(focusTarget.position, targetPos, Time.deltaTime * snapSpeed);
-
-        // Optional: snap when very close to avoid small floating
-        if ((focusTarget.position - targetPos).sqrMagnitude < 0.0001f)
-            focusTarget.position = targetPos;
-    }
-
-    private void CameraFollow()
-    {
-        if (focusTarget == null) return;
-
-        Vector3 desired = focusTarget.position + cameraOffset;
-        transform.position = Vector3.Lerp(transform.position, desired, Time.deltaTime * cameraFollowSpeed);
-
-        // Optional: snap when very close to avoid micro-oscillation
-        if ((transform.position - desired).sqrMagnitude < 0.0001f)
-            transform.position = desired;
+        // Combine horizontal and vertical tilt for camera
+        Quaternion camTarget = Quaternion.Euler(targetX, 0f, targetZ * 0.5f);
+        mainCamera.transform.localRotation = Quaternion.Lerp(mainCamera.transform.localRotation, camTarget, Time.deltaTime * tiltSmoothSpeed);
     }
 }
