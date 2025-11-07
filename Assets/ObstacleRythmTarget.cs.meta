@@ -1,2 +1,22 @@
 fileFormatVersion: 2
 guid: 050ad6548ec8280419298ae509f5fab6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - indicatorPrefab: {fileID: 9162516812980739089, guid: bc227c4bbed554346b2779a4eaaec536, type: 3}
+  - triangleSprite: {fileID: 21300000, guid: fbbaf1fb9b0af5341b1c4d659f3697f4, type: 3}
+  - squareSprite: {fileID: 21300000, guid: 8e6acc6899bc23c4ab8e651d7ebb9c44, type: 3}
+  - circleSprite: {fileID: 21300000, guid: 31fa508b618f53f419d7e5c93398f399, type: 3}
+  - xSprite: {fileID: 21300000, guid: 03c98d3c009a69346ac1d88a6049744a, type: 3}
+  - l1Sprite: {fileID: 21300000, guid: e44404b17ab4fac4c929647c1b08ab20, type: 3}
+  - l2Sprite: {fileID: 21300000, guid: ff05bca1c6ee8a246ae4ac9105952f3c, type: 3}
+  - r1Sprite: {fileID: 21300000, guid: 183a5bc10bcd3284a9e5c4159462e73d, type: 3}
+  - r2Sprite: {fileID: 21300000, guid: 544a2c5dc800b8b4a9f44163f29dc660, type: 3}
+  - l3Sprite: {fileID: 21300000, guid: 55d337ced90eb0645b4e66796b9a9cca, type: 3}
+  - r3Sprite: {fileID: 21300000, guid: 5cb5d2f85e9acfd469121e945db5bb09, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

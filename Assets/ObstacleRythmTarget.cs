@@ -11,13 +11,37 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private Vector3 startPos;
     private Vector3 endPos;
     private bool hitOrMissed = false;
+     public float indicatorHeight = 1.0f;
 
-    public void Init(Vector3 spawn, Vector3 arrival, int cell, float travel)
+    private GameObject[] indicators;
+
+    /// <summary>
+    /// Initializes the obstacle and spawns its indicators above it.
+    /// </summary>
+    public void Init(Vector3 spawn, Vector3 arrival, int cell, float travel, GameObject indicatorPrefab, Sprite[] sprites)
     {
         startPos = spawn;
         endPos = arrival;
         cellIndex = cell;
-        travelTime = travel / GameSpeedManager.Instance.currentSpeed; // scale by global speed
+        travelTime = travel;
+
+        // Spawn indicators
+        if (indicatorPrefab != null && sprites != null && sprites.Length > 0)
+        {
+            indicators = new GameObject[sprites.Length];
+            float offsetStep = 0.7f; // spacing for multiple indicators
+            float startOffset = -(sprites.Length - 1) * offsetStep / 2f;
+
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                GameObject ind = Instantiate(indicatorPrefab, transform);
+                ind.transform.localPosition = Vector3.up * indicatorHeight + Vector3.right * (startOffset + i * offsetStep);
+                var sr = ind.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sprite = sprites[i];
+                indicators[i] = ind;
+            }
+        }
+
         StartCoroutine(TravelRoutine());
     }
 
@@ -29,7 +53,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
         while (timer < travelTime)
         {
-            timer += Time.deltaTime * GameSpeedManager.Instance.currentSpeed; // move faster if speed up
+            timer += Time.deltaTime;
             float t = Mathf.Clamp01(timer / travelTime);
             transform.position = Vector3.Lerp(startPos, endPos, t);
 
@@ -54,23 +78,24 @@ public class ObstacleRhythmTarget : MonoBehaviour
         var player = FindFirstObjectByType<PlayerRhythmInput>();
         if (player == null) return;
 
+        // Require both correct input and aiming at the correct cell
         if (inputCell == cellIndex && hittable && player.CurrentSelectedCell == cellIndex)
             OnHit();
     }
 
-    private void OnHit()
+    public void OnHit()
     {
         hitOrMissed = true;
         hittable = false;
         Destroy(gameObject);
-        // feedback here
+        // optional: play visual/sound feedback
     }
 
     private void OnMiss()
     {
         hitOrMissed = true;
         hittable = false;
-        // deduct life/heart here
         Destroy(gameObject, 0.4f);
+        // optional: reduce player life
     }
 }
