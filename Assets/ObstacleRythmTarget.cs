@@ -11,19 +11,21 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private Vector3 startPos;
     private Vector3 endPos;
     private bool hitOrMissed = false;
-     public float indicatorHeight = 1.0f;
+    public float indicatorHeight = 1.0f;
 
     private GameObject[] indicators;
+    private AudioClip destructionSound;
 
     /// <summary>
     /// Initializes the obstacle and spawns its indicators above it.
     /// </summary>
-    public void Init(Vector3 spawn, Vector3 arrival, int cell, float travel, GameObject indicatorPrefab, Sprite[] sprites)
+    public void Init(Vector3 spawn, Vector3 arrival, int cell, float travel, GameObject indicatorPrefab, Sprite[] sprites, AudioClip audioClip)
     {
         startPos = spawn;
         endPos = arrival;
         cellIndex = cell;
         travelTime = travel;
+        destructionSound = audioClip;
 
         // Spawn indicators
         if (indicatorPrefab != null && sprites != null && sprites.Length > 0)
@@ -87,8 +89,12 @@ public class ObstacleRhythmTarget : MonoBehaviour
     {
         hitOrMissed = true;
         hittable = false;
+        
+        // Play explosion sound when player successfully hits the obstacle
+        PlayDestructionSound();
+        
         Destroy(gameObject);
-        // optional: play visual/sound feedback
+        // optional: play visual feedback
     }
 
     private void OnMiss()
@@ -97,5 +103,13 @@ public class ObstacleRhythmTarget : MonoBehaviour
         hittable = false;
         Destroy(gameObject, 0.4f);
         // optional: reduce player life
+    }
+
+    private void PlayDestructionSound()
+    {
+        if (destructionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+        }
     }
 }

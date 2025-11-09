@@ -8,6 +8,9 @@ public class DebugSpawner : MonoBehaviour
     public GameObject debugPrefab;      // The obstacle prefab
     public GameObject indicatorPrefab;  // Empty GameObject with SpriteRenderer
 
+    [Header("Audio")]
+    public AudioClip explosionSound;    // Explosion sound for destruction
+
     [Header("Spawn Timing")]
     public float startSpawnInterval = 4f;
     public float minSpawnInterval = 2f;
@@ -65,8 +68,8 @@ public class DebugSpawner : MonoBehaviour
             // Collect sprites for this cell
             Sprite[] spritesForCell = GetSpritesForCell(zone);
 
-            // Initialize obstacle with indicator prefab and sprites
-            obstacle.Init(spawn, arrival, zone, travelTime, indicatorPrefab, spritesForCell);
+            // Initialize obstacle with indicator prefab, sprites, and explosion sound
+            obstacle.Init(spawn, arrival, zone, travelTime, indicatorPrefab, spritesForCell, explosionSound);
         }
     }
 
