@@ -10,13 +10,13 @@ public class ObstacleRhythmTarget : MonoBehaviour
     public DebugSpawner spawner;
     public Renderer rend;
     public HitEvaluator hitEvaluator = new HitEvaluator();
-    public DualSenseRumble dualSenseRumble; // auto-assigned from spawner
+    public DualSenseRumble dualSenseRumble; // assign in spawner
 
     [Header("Vibration Settings")]
     [Range(0f, 1f)] public float approachVibrationStrength = 0.2f;
     [Range(0f, 1f)] public float missVibrationStrength = 0.5f;
     public float approachVibrationDuration = 0.2f;
-    public float missVibrationDuration = 0.15f;
+    public float missVibrationDuration = 0.1f; // lower duration
 
     private Vector3 startPos;
     private Vector3 endPos;
@@ -27,7 +27,6 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private float arrivalTime;
     private bool approachTriggered = false;
 
-    // Event for when a miss happens
     public static event Action OnPlayerMiss;
 
     private void OnEnable()
@@ -92,7 +91,6 @@ public class ObstacleRhythmTarget : MonoBehaviour
             yield return null;
         }
 
-        // If not hit by the time it finishes, mark miss
         if (!wasHit)
             OnMiss();
 
@@ -112,7 +110,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
             wasHit = true;
             spawner.SpawnHitFeedback(result, transform.position);
 
-            // No vibration for hitting the obstacle
+            // No vibration on hit
             Destroy(gameObject);
         }
     }
@@ -124,7 +122,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
             spawner.SpawnHitFeedback("Miss", transform.position);
             OnPlayerMiss?.Invoke();
 
-            // Stronger vibration for miss
+            // Miss vibration
             TriggerMissVibration();
         }
     }
@@ -135,11 +133,11 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
         float left = 0f, right = 0f;
 
-        // Determine column: left=0, middle=1, right=2
+        // Fix left/right motor: left column = left motor, right column = right motor
         int column = cellIndex % 3;
-        if (column == 0) right = approachVibrationStrength;   // left column → right motor
-        else if (column == 2) left = approachVibrationStrength; // right column → left motor
-        else left = right = approachVibrationStrength;         // middle → both
+        if (column == 0) left = approachVibrationStrength;
+        else if (column == 2) right = approachVibrationStrength;
+        else left = right = approachVibrationStrength;
 
         dualSenseRumble.LeftRumble = left;
         dualSenseRumble.RightRumble = right;
