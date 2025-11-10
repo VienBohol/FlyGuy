@@ -1,6 +1,6 @@
 using UnityEngine;
-using System.Collections;
 using System;
+using System.Collections;
 
 public class DebugSpawner : MonoBehaviour
 {
@@ -8,7 +8,7 @@ public class DebugSpawner : MonoBehaviour
     public GridManager gridManager;
     public GameObject obstaclePrefab;
     public GameObject indicatorPrefab;
-    
+
     [Header("Feedback System")]
     public SpriteRenderer feedbackRenderer; // assign the sprite renderer childed to the crosshair
 

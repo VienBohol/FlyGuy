@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using UniSense;
+using DualSenseSample.Inputs;
 
 public class ObstacleRhythmTarget : MonoBehaviour
 {
@@ -8,6 +10,13 @@ public class ObstacleRhythmTarget : MonoBehaviour
     public DebugSpawner spawner;
     public Renderer rend;
     public HitEvaluator hitEvaluator = new HitEvaluator();
+    public DualSenseRumble dualSenseRumble;
+
+    [Header("Vibration Settings")]
+    [Range(0f, 1f)] public float approachVibrationStrength = 0.2f;
+    [Range(0f, 1f)] public float missVibrationStrength = 0.5f;
+    public float approachVibrationDuration = 0.2f;
+    public float missVibrationDuration = 0.3f;
 
     private Vector3 startPos;
     private Vector3 endPos;
@@ -16,8 +25,9 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private bool hittable = false;
     private bool wasHit = false;
     private float arrivalTime;
+    private bool approachTriggered = false;
 
-    // New event for when a miss happens
+    // Event for when a miss happens
     public static event Action OnPlayerMiss;
 
     private void OnEnable()
@@ -36,6 +46,10 @@ public class ObstacleRhythmTarget : MonoBehaviour
         endPos = arrival;
         cellIndex = zone;
         travelTime = travel;
+
+        // Auto-assign DualSenseRumble if missing
+        if (dualSenseRumble == null)
+            dualSenseRumble = FindFirstObjectByType<DualSenseRumble>();
 
         StartCoroutine(TravelRoutine());
     }
@@ -58,8 +72,9 @@ public class ObstacleRhythmTarget : MonoBehaviour
             transform.position = Vector3.Lerp(startPos, endPos, t);
 
             float timeUntilArrival = arrivalTime - Time.time;
-            bool shouldBeHittable = hitEvaluator.IsWithinWindow(timeUntilArrival);
 
+            // Make obstacle hittable within hit window
+            bool shouldBeHittable = hitEvaluator.IsWithinWindow(timeUntilArrival);
             if (shouldBeHittable && !hittable)
             {
                 hittable = true;
@@ -71,9 +86,17 @@ public class ObstacleRhythmTarget : MonoBehaviour
                 spawner.SetObstacleMaterial(this, spawner.defaultMaterial);
             }
 
+            // Approach vibration trigger (>50% travel)
+            if (!approachTriggered && elapsed > travelTime * 0.5f)
+            {
+                TriggerApproachVibration();
+                approachTriggered = true;
+            }
+
             yield return null;
         }
 
+        // If not hit by the time it finishes, mark miss
         if (!wasHit)
             OnMiss();
 
@@ -92,6 +115,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
         {
             wasHit = true;
             spawner.SpawnHitFeedback(result, transform.position);
+            // No vibration for successful hit
             Destroy(gameObject);
         }
     }
@@ -101,7 +125,47 @@ public class ObstacleRhythmTarget : MonoBehaviour
         if (!wasHit)
         {
             spawner.SpawnHitFeedback("Miss", transform.position);
-            OnPlayerMiss?.Invoke(); // Notify listeners
+            OnPlayerMiss?.Invoke();
+
+            // Trigger miss vibration
+            TriggerMissVibration();
+        }
+    }
+
+    private void TriggerApproachVibration()
+    {
+        if (dualSenseRumble == null) return;
+
+        float left = 0f, right = 0f;
+        int column = cellIndex % 3; // 0=left,1=middle,2=right
+
+        if (column == 0) left = approachVibrationStrength;
+        else if (column == 2) right = approachVibrationStrength;
+        else left = right = approachVibrationStrength;
+
+        dualSenseRumble.LeftRumble = left;
+        dualSenseRumble.RightRumble = right;
+
+        StartCoroutine(StopVibration(approachVibrationDuration));
+    }
+
+    private void TriggerMissVibration()
+    {
+        if (dualSenseRumble == null) return;
+
+        dualSenseRumble.LeftRumble = missVibrationStrength;
+        dualSenseRumble.RightRumble = missVibrationStrength;
+
+        StartCoroutine(StopVibration(missVibrationDuration));
+    }
+
+    private IEnumerator StopVibration(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        if (dualSenseRumble != null)
+        {
+            dualSenseRumble.LeftRumble = 0f;
+            dualSenseRumble.RightRumble = 0f;
         }
     }
 }
