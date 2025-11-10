@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class DebugSpawner : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class DebugSpawner : MonoBehaviour
     public Sprite goodSprite;
     public Sprite badSprite;
     public Sprite missSprite;
+    public static event Action<string> OnFeedbackEvent;
 
     [Header("Button Sprites")]
     public Sprite topLeftSprite;
@@ -71,7 +73,7 @@ public class DebugSpawner : MonoBehaviour
 
     private void SpawnOneRandom(float travelTime)
     {
-        int zone = Random.Range(0, gridManager.rows * gridManager.cols);
+        int zone = UnityEngine.Random.Range(0, gridManager.rows * gridManager.cols);
         Vector3 spawn = gridManager.GetSpawnPositionInCell(zone);
         Vector3 arrival = gridManager.GetArrivalPositionInCell(zone);
 
@@ -160,6 +162,7 @@ public class DebugSpawner : MonoBehaviour
             StopCoroutine(feedbackRoutine);
 
         feedbackRoutine = StartCoroutine(ShowFeedback(sprite));
+        OnFeedbackEvent?.Invoke(result);
     }
 
     private IEnumerator ShowFeedback(Sprite sprite)
