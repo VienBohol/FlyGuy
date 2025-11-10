@@ -1,35 +1,28 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerRhythmInput : MonoBehaviour
 {
     [Header("References")]
     public GridManager gridManager;
 
-    private PlayerControls controls;
+    private InputSystem_Actions controls;
     private Dictionary<string, int> inputToCell = new Dictionary<string, int>();
 
-    public delegate void CellInputEvent(int cellIndex);
-    public static event CellInputEvent OnCellInput; // Fired when player presses a rhythm button
-    public int CurrentSelectedCell { get; private set; } = 4; // middle by default
-    private void Update()
-{
-    Vector2 leftStick = controls.Player.Move.ReadValue<Vector2>();
-    // Apply deadzone
-    if (leftStick.magnitude < 0.2f) leftStick = Vector2.zero;
+    public delegate void CellInputEvent(int inputCell, int aimCell);
+    public static event CellInputEvent OnCellInput;
 
-    int row = 1, col = 1;
-    if (leftStick != Vector2.zero)
-    {
-        col = leftStick.x < -0.33f ? 0 : (leftStick.x > 0.33f ? 2 : 1);
-        row = leftStick.y > 0.33f ? 0 : (leftStick.y < -0.33f ? 2 : 1);
-    }
-    CurrentSelectedCell = row * 3 + col;
-}
+    public int CurrentSelectedCell { get; private set; } = 4; // Middle default
+
+    // Combo timing
+    private float l3PressedTime;
+    private float r3PressedTime;
+    private const float comboWindow = 0.15f;
 
     private void Awake()
     {
-        controls = new PlayerControls();
+        controls = new InputSystem_Actions();
         BuildInputMapping();
     }
 
@@ -45,18 +38,23 @@ public class PlayerRhythmInput : MonoBehaviour
         controls.Player.Disable();
     }
 
+    private void Update()
+    {
+        Vector2 leftStick = controls.Player.Move.ReadValue<Vector2>();
+        if (leftStick.magnitude < 0.2f) leftStick = Vector2.zero;
+
+        int row = 1, col = 1;
+        if (leftStick != Vector2.zero)
+        {
+            col = leftStick.x < -0.33f ? 0 : (leftStick.x > 0.33f ? 2 : 1);
+            row = leftStick.y > 0.33f ? 0 : (leftStick.y < -0.33f ? 2 : 1);
+        }
+
+        CurrentSelectedCell = row * 3 + col;
+    }
+
     private void BuildInputMapping()
     {
-        // 3×3 grid index layout:
-        //  0 1 2
-        //  3 4 5
-        //  6 7 8
-        //
-        // Example mapping:
-        // Top row: L2, Triangle, R2
-        // Middle row: Square, L3+R3, Circle
-        // Bottom row: L1, Cross, R1
-
         inputToCell["L2"] = 0;
         inputToCell["Triangle"] = 1;
         inputToCell["R2"] = 2;
@@ -72,53 +70,55 @@ public class PlayerRhythmInput : MonoBehaviour
     {
         if (enable)
         {
-            controls.Player.L1.performed += _ => HandleInput("L1");
-            controls.Player.L2.performed += _ => HandleInput("L2");
-            controls.Player.R1.performed += _ => HandleInput("R1");
-            controls.Player.R2.performed += _ => HandleInput("R2");
-            controls.Player.Triangle.performed += _ => HandleInput("Triangle");
-            controls.Player.Square.performed += _ => HandleInput("Square");
-            controls.Player.Circle.performed += _ => HandleInput("Circle");
-            controls.Player.Cross.performed += _ => HandleInput("Cross");
-            controls.Player.L3.performed += _ => CheckL3R3Combo();
-            controls.Player.R3.performed += _ => CheckL3R3Combo();
+            controls.Player.L1.performed += ctx => HandleInput("L1");
+            controls.Player.L2.performed += ctx => HandleInput("L2");
+            controls.Player.R1.performed += ctx => HandleInput("R1");
+            controls.Player.R2.performed += ctx => HandleInput("R2");
+            controls.Player.Triangle.performed += ctx => HandleInput("Triangle");
+            controls.Player.Square.performed += ctx => HandleInput("Square");
+            controls.Player.Circle.performed += ctx => HandleInput("Circle");
+            controls.Player.Cross.performed += ctx => HandleInput("Cross");
+            controls.Player.L3.performed += ctx => CheckL3R3Combo("L3");
+            controls.Player.R3.performed += ctx => CheckL3R3Combo("R3");
         }
         else
         {
-            controls.Player.L1.performed -= _ => HandleInput("L1");
-            controls.Player.L2.performed -= _ => HandleInput("L2");
-            controls.Player.R1.performed -= _ => HandleInput("R1");
-            controls.Player.R2.performed -= _ => HandleInput("R2");
-            controls.Player.Triangle.performed -= _ => HandleInput("Triangle");
-            controls.Player.Square.performed -= _ => HandleInput("Square");
-            controls.Player.Circle.performed -= _ => HandleInput("Circle");
-            controls.Player.Cross.performed -= _ => HandleInput("Cross");
-            controls.Player.L3.performed -= _ => CheckL3R3Combo();
-            controls.Player.R3.performed -= _ => CheckL3R3Combo();
+            controls.Player.L1.performed -= ctx => HandleInput("L1");
+            controls.Player.L2.performed -= ctx => HandleInput("L2");
+            controls.Player.R1.performed -= ctx => HandleInput("R1");
+            controls.Player.R2.performed -= ctx => HandleInput("R2");
+            controls.Player.Triangle.performed -= ctx => HandleInput("Triangle");
+            controls.Player.Square.performed -= ctx => HandleInput("Square");
+            controls.Player.Circle.performed -= ctx => HandleInput("Circle");
+            controls.Player.Cross.performed -= ctx => HandleInput("Cross");
+            controls.Player.L3.performed -= ctx => CheckL3R3Combo("L3");
+            controls.Player.R3.performed -= ctx => CheckL3R3Combo("R3");
         }
     }
 
-    private float l3PressedTime;
-    private float r3PressedTime;
-    private const float comboWindow = 0.15f; // must be pressed within 150ms
-
-    private void CheckL3R3Combo()
+    private void CheckL3R3Combo(string key)
     {
         float now = Time.time;
-        if (now - l3PressedTime < comboWindow || now - r3PressedTime < comboWindow)
+        if (key == "L3")
         {
-            HandleInput("L3R3");
+            if (now - r3PressedTime < comboWindow) HandleInput("L3R3");
+            l3PressedTime = now;
         }
-        l3PressedTime = now;
-        r3PressedTime = now;
+        else
+        {
+            if (now - l3PressedTime < comboWindow) HandleInput("L3R3");
+            r3PressedTime = now;
+        }
     }
 
     private void HandleInput(string key)
     {
-        if (!inputToCell.TryGetValue(key, out int cellIndex))
-            return;
+        if (!inputToCell.TryGetValue(key, out int inputCell)) return;
 
-        OnCellInput?.Invoke(cellIndex);
-        // Later we’ll check for hit detection here
+        // Invoke event
+        OnCellInput?.Invoke(inputCell, CurrentSelectedCell);
+
+        // Only log once per press
+        Debug.Log($"Pressed {key} | InputCell: {inputCell}, AimCell: {CurrentSelectedCell}");
     }
 }

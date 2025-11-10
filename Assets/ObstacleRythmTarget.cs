@@ -3,113 +3,105 @@ using System.Collections;
 
 public class ObstacleRhythmTarget : MonoBehaviour
 {
-    public int cellIndex;
-    public float travelTime = 2f;
-    public float hitWindow = 0.1f;
-    public bool hittable { get; private set; }
+    [Header("References")]
+    public DebugSpawner spawner;
+    public Renderer rend;
+    public HitEvaluator hitEvaluator = new HitEvaluator();
 
     private Vector3 startPos;
     private Vector3 endPos;
-    private bool hitOrMissed = false;
-    public float indicatorHeight = 1.0f;
+    private float travelTime;
+    private int cellIndex;
+    private bool hittable = false;
+    private bool wasHit = false;
+    private float arrivalTime;
 
-    private GameObject[] indicators;
-    private AudioClip destructionSound;
+    private void OnEnable()
+    {
+        PlayerRhythmInput.OnCellInput += TryHandleHit;
+    }
 
-    /// <summary>
-    /// Initializes the obstacle and spawns its indicators above it.
-    /// </summary>
-    public void Init(Vector3 spawn, Vector3 arrival, int cell, float travel, GameObject indicatorPrefab, Sprite[] sprites, AudioClip audioClip)
+    private void OnDisable()
+    {
+        PlayerRhythmInput.OnCellInput -= TryHandleHit;
+    }
+
+    public void Init(Vector3 spawn, Vector3 arrival, int zone, float travel)
     {
         startPos = spawn;
         endPos = arrival;
-        cellIndex = cell;
+        cellIndex = zone;
         travelTime = travel;
-        destructionSound = audioClip;
-
-        // Spawn indicators
-        if (indicatorPrefab != null && sprites != null && sprites.Length > 0)
-        {
-            indicators = new GameObject[sprites.Length];
-            float offsetStep = 0.7f; // spacing for multiple indicators
-            float startOffset = -(sprites.Length - 1) * offsetStep / 2f;
-
-            for (int i = 0; i < sprites.Length; i++)
-            {
-                GameObject ind = Instantiate(indicatorPrefab, transform);
-                ind.transform.localPosition = Vector3.up * indicatorHeight + Vector3.right * (startOffset + i * offsetStep);
-                var sr = ind.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sprite = sprites[i];
-                indicators[i] = ind;
-            }
-        }
 
         StartCoroutine(TravelRoutine());
     }
 
+    public Renderer GetRenderer()
+    {
+        if (rend == null) rend = GetComponentInChildren<Renderer>();
+        return rend;
+    }
+
     private IEnumerator TravelRoutine()
     {
-        float timer = 0f;
-        float hitStart = travelTime - hitWindow;
-        float hitEnd = travelTime + hitWindow;
+        float elapsed = 0f;
+        arrivalTime = Time.time + travelTime;
 
-        while (timer < travelTime)
+        while (elapsed < travelTime)
         {
-            timer += Time.deltaTime;
-            float t = Mathf.Clamp01(timer / travelTime);
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / travelTime);
             transform.position = Vector3.Lerp(startPos, endPos, t);
 
-            if (!hittable && timer >= hitStart)
-                hittable = true;
+            // Check if obstacle should be hittable
+            float timeUntilArrival = arrivalTime - Time.time;
+            bool shouldBeHittable = hitEvaluator.IsWithinWindow(timeUntilArrival);
 
-            if (hittable && timer >= hitEnd)
-                OnMiss();
+            if (shouldBeHittable && !hittable)
+            {
+                hittable = true;
+                spawner.SetObstacleMaterial(this, spawner.hittableMaterial);
+            }
+            else if (!shouldBeHittable && hittable)
+            {
+                hittable = false;
+                spawner.SetObstacleMaterial(this, spawner.defaultMaterial);
+            }
 
             yield return null;
         }
 
-        if (!hitOrMissed)
+        // If not hit by the time it finishes, mark miss
+        if (!wasHit)
+        {
             OnMiss();
-    }
+        }
 
-    private void OnEnable() => PlayerRhythmInput.OnCellInput += TryHandleHit;
-    private void OnDisable() => PlayerRhythmInput.OnCellInput -= TryHandleHit;
-
-    private void TryHandleHit(int inputCell)
-    {
-        var player = FindFirstObjectByType<PlayerRhythmInput>();
-        if (player == null) return;
-
-        // Require both correct input and aiming at the correct cell
-        if (inputCell == cellIndex && hittable && player.CurrentSelectedCell == cellIndex)
-            OnHit();
-    }
-
-    public void OnHit()
-    {
-        hitOrMissed = true;
-        hittable = false;
-        
-        // Play explosion sound when player successfully hits the obstacle
-        PlayDestructionSound();
-        
         Destroy(gameObject);
-        // optional: play visual feedback
+    }
+
+    private void TryHandleHit(int inputCell, int aimCell)
+    {
+        if (wasHit || !hittable) return;
+
+        if (inputCell != cellIndex || aimCell != cellIndex) return;
+
+        float timeUntilArrival = arrivalTime - Time.time;
+        string result = hitEvaluator.EvaluateHit(timeUntilArrival);
+
+        if (result != "Miss")
+        {
+            wasHit = true;
+            spawner.SpawnHitFeedback(result, transform.position);
+            Destroy(gameObject);
+        }
     }
 
     private void OnMiss()
     {
-        hitOrMissed = true;
-        hittable = false;
-        Destroy(gameObject, 0.4f);
-        // optional: reduce player life
-    }
-
-    private void PlayDestructionSound()
-    {
-        if (destructionSound != null)
+        if (!wasHit)
         {
-            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+            spawner.SpawnHitFeedback("Miss", transform.position);
         }
     }
 }

@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 9e07b5f1ebeb2764ea80a163086f4ba7, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 583f0d117f7056948943f87366c0f77b, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04ed8aa748bbf6b409b4e5dba991ebfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerInput: {fileID: 1245481874}
+  playerInput: {fileID: 1726745700}
   crosshairTransform: {fileID: 652376751}
   armsTransform: {fileID: 2128394168}
   mainCamera: {fileID: 330585545}
@@ -719,7 +719,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.9245283, g: 0.5143122, b: 0.047970813, a: 1}
+      maxColor: {r: 0.41509432, g: 0.41050526, b: 0.40530434, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5371,9 +5371,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.018, y: 0.003, z: 2.225}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1462349101}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
@@ -5469,7 +5470,6 @@ GameObject:
   - component: {fileID: 1245481870}
   - component: {fileID: 1245481872}
   - component: {fileID: 1245481873}
-  - component: {fileID: 1245481874}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -5497,25 +5497,25 @@ MonoBehaviour:
   viewportJitter: 0.2
   lockGridAfterStart: 1
   arrivalWorldPositions:
-  - {x: -1.5050746, y: 0.8467803, z: 2.2}
+  - {x: -1.5066093, y: 0.8467803, z: 2.2}
   - {x: 0, y: 0.8467803, z: 2.2}
-  - {x: 1.5050749, y: 0.8467803, z: 2.2}
-  - {x: -1.5050746, y: 0, z: 2.2}
+  - {x: 1.5066099, y: 0.8467803, z: 2.2}
+  - {x: -1.5066093, y: 0, z: 2.2}
   - {x: 0, y: 0, z: 2.2}
-  - {x: 1.5050749, y: 0, z: 2.2}
-  - {x: -1.5050746, y: -0.8467805, z: 2.2}
+  - {x: 1.5066099, y: 0, z: 2.2}
+  - {x: -1.5066093, y: -0.8467805, z: 2.2}
   - {x: 0, y: -0.8467805, z: 2.2}
-  - {x: 1.5050749, y: -0.8467805, z: 2.2}
+  - {x: 1.5066099, y: -0.8467805, z: 2.2}
   spawnWorldPositions:
-  - {x: -47.88874, y: 26.94301, z: 70}
+  - {x: -47.93757, y: 26.94301, z: 70}
   - {x: 0, y: 26.94301, z: 70}
-  - {x: 47.888744, y: 26.94301, z: 70}
-  - {x: -47.88874, y: 0, z: 70}
+  - {x: 47.937588, y: 26.94301, z: 70}
+  - {x: -47.93757, y: 0, z: 70}
   - {x: 0, y: 0, z: 70}
-  - {x: 47.888744, y: 0, z: 70}
-  - {x: -47.88874, y: -26.943016, z: 70}
+  - {x: 47.937588, y: 0, z: 70}
+  - {x: -47.93757, y: -26.943016, z: 70}
   - {x: 0, y: -26.943016, z: 70}
-  - {x: 47.888744, y: -26.943016, z: 70}
+  - {x: 47.937588, y: -26.943016, z: 70}
 --- !u!4 &1245481871
 Transform:
   m_ObjectHideFlags: 0
@@ -5544,14 +5544,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1245481870}
-  debugPrefab: {fileID: 7541423977320023471, guid: 321783beb1ceff943ba13a50f0f6847c, type: 3}
+  obstaclePrefab: {fileID: 7541423977320023471, guid: 321783beb1ceff943ba13a50f0f6847c, type: 3}
   indicatorPrefab: {fileID: 9162516812980739089, guid: bc227c4bbed554346b2779a4eaaec536, type: 3}
-  explosionSound: {fileID: 8300000, guid: 32fac2f8f3923fe4c894f0446b84bc1e, type: 3}
-  startSpawnInterval: 4
-  minSpawnInterval: 1
-  startTravelTime: 10
-  minTravelTime: 3
-  difficultyRampTime: 120
+  feedbackRenderer: {fileID: 1462349102}
+  perfectSprite: {fileID: 21300000, guid: dd6180a64de3d4b4da88904f12f25f28, type: 3}
+  greatSprite: {fileID: 21300000, guid: 4885e941777f30146bb481c94b475a8e, type: 3}
+  goodSprite: {fileID: 21300000, guid: 861be17b6a3e66f4aaddaaf01112c047, type: 3}
+  badSprite: {fileID: 21300000, guid: b09b654334289fe4fa5af7693a1fb672, type: 3}
+  missSprite: {fileID: 21300000, guid: d33efebee9f514c4c813b191d9cde08e, type: 3}
   topLeftSprite: {fileID: 21300000, guid: ff05bca1c6ee8a246ae4ac9105952f3c, type: 3}
   topMiddleSprite: {fileID: 21300000, guid: fbbaf1fb9b0af5341b1c4d659f3697f4, type: 3}
   topRightSprite: {fileID: 21300000, guid: 544a2c5dc800b8b4a9f44163f29dc660, type: 3}
@@ -5562,6 +5562,13 @@ MonoBehaviour:
   bottomLeftSprite: {fileID: 21300000, guid: e44404b17ab4fac4c929647c1b08ab20, type: 3}
   bottomMiddleSprite: {fileID: 21300000, guid: 03c98d3c009a69346ac1d88a6049744a, type: 3}
   bottomRightSprite: {fileID: 21300000, guid: 183a5bc10bcd3284a9e5c4159462e73d, type: 3}
+  defaultMaterial: {fileID: 2100000, guid: 5fa19df8e53b8844b8d50afe42492384, type: 2}
+  hittableMaterial: {fileID: 2100000, guid: aedc3890a4ad3224c983c21c3b02a181, type: 2}
+  startSpawnInterval: 4
+  minSpawnInterval: 1
+  startTravelTime: 10
+  minTravelTime: 3
+  difficultyRampTime: 120
 --- !u!114 &1245481873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5578,19 +5585,93 @@ MonoBehaviour:
   maxSpeed: 3
   rampTime: 180
   debugCurrentSpeed: 0
---- !u!114 &1245481874
-MonoBehaviour:
+--- !u!1 &1462349100
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245481868}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1462349101}
+  - component: {fileID: 1462349102}
+  m_Layer: 0
+  m_Name: FeedBack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1462349101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462349100}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.0066666678, y: 0.36400002, z: 0.024000168}
+  m_LocalScale: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 652376751}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &1462349102
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462349100}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d9ab435dc838a24eaacee34a9036253, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridManager: {fileID: 1245481870}
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_Sprite: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 0
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1726745699
 GameObject:
   m_ObjectHideFlags: 0
