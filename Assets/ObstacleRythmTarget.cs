@@ -14,7 +14,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
     [Header("Vibration Settings")]
     [Range(0f,1f)] public float approachVibrationStrength = 0.2f;
-    [Range(0f,1f)] public float missVibrationStrength = 0.5f;
+    [Range(0f,1f)] public float missVibrationStrength = 0.3f;
     public float approachVibrationDuration = 0.2f;
     public float missVibrationDuration = 0.15f;
 

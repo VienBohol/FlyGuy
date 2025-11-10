@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -10,7 +11,7 @@ public class PlayerHealth : MonoBehaviour
     public float regenRate = 1f;   // seconds between each heart regen
 
     [Header("References")]
-    public SpriteRenderer[] heartSprites;
+    public Image[] heartImages;   // UI Images instead of SpriteRenderers
     public Sprite fullHeart;
     public Sprite emptyHeart;
 
@@ -82,9 +83,10 @@ public class PlayerHealth : MonoBehaviour
 
     private void UpdateHearts()
     {
-        for (int i = 0; i < heartSprites.Length; i++)
+        for (int i = 0; i < heartImages.Length; i++)
         {
-            heartSprites[i].sprite = i < currentHealth ? fullHeart : emptyHeart;
+            if (heartImages[i] != null)
+                heartImages[i].sprite = i < currentHealth ? fullHeart : emptyHeart;
         }
     }
 }
