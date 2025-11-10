@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 583f0d117f7056948943f87366c0f77b, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 0a98eaa61401f3c49a068e4fbd6c2e2a, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -6073,7 +6073,7 @@ MonoBehaviour:
   rows: 3
   cols: 3
   arrivalDistance: 2.2
-  spawnDistance: 70
+  spawnDistance: 100
   viewportJitter: 0.2
   lockGridAfterStart: 1
   arrivalWorldPositions:
@@ -6087,15 +6087,15 @@ MonoBehaviour:
   - {x: 0, y: -0.8467805, z: 2.2}
   - {x: 1.5066099, y: -0.8467805, z: 2.2}
   spawnWorldPositions:
-  - {x: -47.93757, y: 26.94301, z: 70}
-  - {x: 0, y: 26.94301, z: 70}
-  - {x: 47.937588, y: 26.94301, z: 70}
-  - {x: -47.93757, y: 0, z: 70}
-  - {x: 0, y: 0, z: 70}
-  - {x: 47.937588, y: 0, z: 70}
-  - {x: -47.93757, y: -26.943016, z: 70}
-  - {x: 0, y: -26.943016, z: 70}
-  - {x: 47.937588, y: -26.943016, z: 70}
+  - {x: -68.48225, y: 38.490013, z: 100}
+  - {x: 0, y: 38.490013, z: 100}
+  - {x: 68.48227, y: 38.490013, z: 100}
+  - {x: -68.48225, y: 0, z: 100}
+  - {x: 0, y: 0, z: 100}
+  - {x: 68.48227, y: 0, z: 100}
+  - {x: -68.48225, y: -38.490025, z: 100}
+  - {x: 0, y: -38.490025, z: 100}
+  - {x: 68.48227, y: -38.490025, z: 100}
 --- !u!4 &1245481871
 Transform:
   m_ObjectHideFlags: 0
@@ -6151,7 +6151,7 @@ MonoBehaviour:
   difficultyRampTime: 120
   startBurstChance: 0.1
   maxBurstChance: 0.5
-  burstStagger: 0.3
+  burstStagger: 1
 --- !u!114 &1245481873
 MonoBehaviour:
   m_ObjectHideFlags: 0

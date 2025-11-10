@@ -126,6 +126,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
     {
         if (!wasHit)
         {
+            wasHit = true; // prevent double triggers
             spawner.SpawnHitFeedback("Miss", transform.position);
             OnPlayerMiss?.Invoke();
             TriggerMissVibration();
