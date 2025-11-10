@@ -165,7 +165,7 @@ public class DebugSpawner : MonoBehaviour
     private IEnumerator ShowFeedback(Sprite sprite)
     {
         feedbackRenderer.sprite = sprite;
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(0.8f);
         feedbackRenderer.sprite = null;
     }
 }

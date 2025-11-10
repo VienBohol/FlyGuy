@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 
 public class ObstacleRhythmTarget : MonoBehaviour
@@ -15,6 +16,9 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private bool hittable = false;
     private bool wasHit = false;
     private float arrivalTime;
+
+    // New event for when a miss happens
+    public static event Action OnPlayerMiss;
 
     private void OnEnable()
     {
@@ -53,7 +57,6 @@ public class ObstacleRhythmTarget : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / travelTime);
             transform.position = Vector3.Lerp(startPos, endPos, t);
 
-            // Check if obstacle should be hittable
             float timeUntilArrival = arrivalTime - Time.time;
             bool shouldBeHittable = hitEvaluator.IsWithinWindow(timeUntilArrival);
 
@@ -71,11 +74,8 @@ public class ObstacleRhythmTarget : MonoBehaviour
             yield return null;
         }
 
-        // If not hit by the time it finishes, mark miss
         if (!wasHit)
-        {
             OnMiss();
-        }
 
         Destroy(gameObject);
     }
@@ -83,7 +83,6 @@ public class ObstacleRhythmTarget : MonoBehaviour
     private void TryHandleHit(int inputCell, int aimCell)
     {
         if (wasHit || !hittable) return;
-
         if (inputCell != cellIndex || aimCell != cellIndex) return;
 
         float timeUntilArrival = arrivalTime - Time.time;
@@ -102,6 +101,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
         if (!wasHit)
         {
             spawner.SpawnHitFeedback("Miss", transform.position);
+            OnPlayerMiss?.Invoke(); // Notify listeners
         }
     }
 }
