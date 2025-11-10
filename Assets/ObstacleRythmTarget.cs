@@ -10,13 +10,13 @@ public class ObstacleRhythmTarget : MonoBehaviour
     public DebugSpawner spawner;
     public Renderer rend;
     public HitEvaluator hitEvaluator = new HitEvaluator();
-    public DualSenseRumble dualSenseRumble; // assign in spawner
+    public DualSenseRumble dualSenseRumble; // assigned automatically
 
     [Header("Vibration Settings")]
-    [Range(0f, 1f)] public float approachVibrationStrength = 0.2f;
-    [Range(0f, 1f)] public float missVibrationStrength = 0.5f;
+    [Range(0f,1f)] public float approachVibrationStrength = 0.2f;
+    [Range(0f,1f)] public float missVibrationStrength = 0.5f;
     public float approachVibrationDuration = 0.2f;
-    public float missVibrationDuration = 0.1f; // lower duration
+    public float missVibrationDuration = 0.15f;
 
     private Vector3 startPos;
     private Vector3 endPos;
@@ -46,6 +46,14 @@ public class ObstacleRhythmTarget : MonoBehaviour
         cellIndex = zone;
         travelTime = travel;
 
+        // automatically find DualSenseRumble if null
+        if (dualSenseRumble == null)
+        {
+            dualSenseRumble = FindFirstObjectByType<DualSenseRumble>();
+            if (dualSenseRumble == null)
+                Debug.LogWarning("No DualSenseRumble found in scene!");
+        }
+
         StartCoroutine(TravelRoutine());
     }
 
@@ -68,7 +76,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
             float timeUntilArrival = arrivalTime - Time.time;
 
-            // Make obstacle hittable within hit window
+            // Make obstacle hittable
             bool shouldBeHittable = hitEvaluator.IsWithinWindow(timeUntilArrival);
             if (shouldBeHittable && !hittable)
             {
@@ -81,7 +89,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
                 spawner.SetObstacleMaterial(this, spawner.defaultMaterial);
             }
 
-            // Approach vibration trigger (>50% of travel)
+            // Approach vibration trigger (after 50% travel)
             if (!approachTriggered && elapsed > travelTime * 0.5f)
             {
                 TriggerApproachVibration();
@@ -91,6 +99,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
             yield return null;
         }
 
+        // Miss if not hit
         if (!wasHit)
             OnMiss();
 
@@ -109,9 +118,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
         {
             wasHit = true;
             spawner.SpawnHitFeedback(result, transform.position);
-
-            // No vibration on hit
-            Destroy(gameObject);
+            Destroy(gameObject); // no vibration on hit
         }
     }
 
@@ -121,8 +128,6 @@ public class ObstacleRhythmTarget : MonoBehaviour
         {
             spawner.SpawnHitFeedback("Miss", transform.position);
             OnPlayerMiss?.Invoke();
-
-            // Miss vibration
             TriggerMissVibration();
         }
     }
@@ -133,7 +138,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
         float left = 0f, right = 0f;
 
-        // Fix left/right motor: left column = left motor, right column = right motor
+        // Column mapping: 0=left, 1=middle, 2=right
         int column = cellIndex % 3;
         if (column == 0) left = approachVibrationStrength;
         else if (column == 2) right = approachVibrationStrength;
@@ -141,6 +146,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
         dualSenseRumble.LeftRumble = left;
         dualSenseRumble.RightRumble = right;
+
         StartCoroutine(StopVibration(approachVibrationDuration));
     }
 
@@ -150,6 +156,7 @@ public class ObstacleRhythmTarget : MonoBehaviour
 
         dualSenseRumble.LeftRumble = missVibrationStrength;
         dualSenseRumble.RightRumble = missVibrationStrength;
+
         StartCoroutine(StopVibration(missVibrationDuration));
     }
 

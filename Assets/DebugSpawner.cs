@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using DualSenseSample.Inputs;
 
 public class DebugSpawner : MonoBehaviour
 {
@@ -72,23 +73,27 @@ public class DebugSpawner : MonoBehaviour
     }
 
     private void SpawnOneRandom(float travelTime)
+{
+    int zone = UnityEngine.Random.Range(0, gridManager.rows * gridManager.cols);
+    Vector3 spawn = gridManager.GetSpawnPositionInCell(zone);
+    Vector3 arrival = gridManager.GetArrivalPositionInCell(zone);
+
+    if (obstaclePrefab != null)
     {
-        int zone = UnityEngine.Random.Range(0, gridManager.rows * gridManager.cols);
-        Vector3 spawn = gridManager.GetSpawnPositionInCell(zone);
-        Vector3 arrival = gridManager.GetArrivalPositionInCell(zone);
+        GameObject go = Instantiate(obstaclePrefab, spawn, Quaternion.identity);
+        var obstacle = go.AddComponent<ObstacleRhythmTarget>();
 
-        if (obstaclePrefab != null)
-        {
-            GameObject go = Instantiate(obstaclePrefab, spawn, Quaternion.identity);
-            var obstacle = go.AddComponent<ObstacleRhythmTarget>();
+        obstacle.spawner = this;
+        obstacle.Init(spawn, arrival, zone, travelTime);
+        SetObstacleMaterial(obstacle, defaultMaterial);
+        SpawnButtonSprites(obstacle.transform, zone);
 
-            obstacle.spawner = this;
-            obstacle.Init(spawn, arrival, zone, travelTime);
-
-            SetObstacleMaterial(obstacle, defaultMaterial);
-            SpawnButtonSprites(obstacle.transform, zone);
-        }
+        // Auto-assign DualSenseRumble from the scene
+        var dualSenseRumble = FindFirstObjectByType<DualSenseRumble>();
+        if (dualSenseRumble != null)
+            obstacle.dualSenseRumble = dualSenseRumble;
     }
+}
 
     private void SpawnButtonSprites(Transform obstacleTransform, int cellIndex)
     {
