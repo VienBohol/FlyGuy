@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -7,13 +6,16 @@ public class PlayerHealth : MonoBehaviour
 {
     [Header("Settings")]
     public int maxHealth = 3;
-    public float regenDelay = 10f; // seconds without damage before regen starts
-    public float regenRate = 1f;   // seconds between each heart regen
+    public float regenDelay = 10f;
+    public float regenRate = 1f;
 
     [Header("References")]
-    public Image[] heartImages;   // UI Images instead of SpriteRenderers
+    public UnityEngine.UI.Image[] heartImages; // Updated for UI Image
     public Sprite fullHeart;
     public Sprite emptyHeart;
+    public CameraShake cameraShake;           // assign in inspector
+    public AudioSource audioSource;           // assign in inspector
+    public AudioClip damageClip;              // assign a sound effect here
 
     private int currentHealth;
     private float lastDamageTime;
@@ -44,6 +46,13 @@ public class PlayerHealth : MonoBehaviour
         lastDamageTime = Time.time;
         UpdateHearts();
 
+        // Trigger screen shake and sound
+        if (cameraShake != null)
+            cameraShake.Shake();
+
+        if (audioSource != null && damageClip != null)
+            audioSource.PlayOneShot(damageClip);
+
         if (regenRoutine != null)
         {
             StopCoroutine(regenRoutine);
@@ -61,17 +70,14 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator RegenRoutine()
     {
-        // Wait for regenDelay seconds without taking damage
         while (Time.time - lastDamageTime < regenDelay)
             yield return null;
 
-        // Start regenerating 1 heart per regenRate seconds
         while (currentHealth < maxHealth)
         {
             currentHealth++;
             UpdateHearts();
 
-            // Stop if damaged again
             if (Time.time - lastDamageTime < regenDelay)
                 yield break;
 
@@ -85,8 +91,7 @@ public class PlayerHealth : MonoBehaviour
     {
         for (int i = 0; i < heartImages.Length; i++)
         {
-            if (heartImages[i] != null)
-                heartImages[i].sprite = i < currentHealth ? fullHeart : emptyHeart;
+            heartImages[i].sprite = i < currentHealth ? fullHeart : emptyHeart;
         }
     }
 }
