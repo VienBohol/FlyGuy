@@ -6074,7 +6074,7 @@ MonoBehaviour:
   cols: 3
   arrivalDistance: 2.2
   spawnDistance: 100
-  viewportJitter: 0.2
+  viewportJitter: 0
   lockGridAfterStart: 1
   arrivalWorldPositions:
   - {x: -1.5066093, y: 0.8467803, z: 2.2}
